@@ -1,3 +1,8 @@
+# Description: A simple test case runner for Python
+# Author: Patsagorn Yuenyong (ptsgrn.dev)
+# License: MIT
+# Documentation: README.md
+
 import sys
 import os
 import subprocess
