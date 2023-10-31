@@ -1,0 +1,1 @@
+a=int(input());j=60;i=24;b=a//(i*j*j);a%=(i*j*j);g=a//(j*j);a%=(j*j);k=a//j;a%=j;d=lambda x:x>1 and's'or'';print(b,'day'+d(b),g,'hour'+d(g),k,'minute'+d(k),a,'second'+d(a)+'.')

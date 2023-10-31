@@ -1,0 +1,1 @@
+print("%.2f"%(int(input())*5/24),'Baht')

@@ -1,0 +1,1 @@
+print(input() == input() and 'Equal' or 'Not Equal')

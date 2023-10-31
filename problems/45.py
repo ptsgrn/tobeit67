@@ -1,0 +1,1 @@
+A=int(input().split('.')[0]);print(('','A','B+','B','C+','C','D+','D','F')[A>=80 and 1 or A>=75 and 2 or A>=70 and 3 or A>=65 and 4 or A>=60 and 5 or A>=55 and 6 or A>=50 and 7 or 8])
