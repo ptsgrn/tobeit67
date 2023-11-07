@@ -33,6 +33,26 @@
       font-family: "PT Mono", monospace;
       --primary-op: 0.9;
       --primary: rgb(56 189 248 / var(--primary-op));
+      transition-duration: 200ms;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: rgb(251 191 36 / var(--primary-op));
+      }
+    }
+
+    /* 10px for smaller than 640px */
+    @media screen and (max-width: 420px) {
+      :root {
+        font-size: 10px;
+      }
+    }
+
+    @media screen and (min-width: 640px) {
+      :root {
+        font-size: 18px;
+      }
     }
 
     .dark {
@@ -47,10 +67,22 @@
     }
 
     .dark .glass {
-      border-radius: 16px;
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
+    }
+
+    main {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-position: 0 0;
+      /* https://codepen.io/kootoopas/pen/kGPoaB */
+      -webkit-animation: bg-scrolling-reverse 20s infinite;
+      -moz-animation: bg-scrolling-reverse 20s infinite;
+      -o-animation: bg-scrolling-reverse 20s infinite;
+      animation: bg-scrolling-reverse 20s infinite;
+      -webkit-animation-timing-function: linear;
+      -moz-animation-timing-function: linear;
+      -o-animation-timing-function: linear;
+      animation-timing-function: linear;
     }
 
     [data-toggle] [data-dark],
@@ -89,10 +121,53 @@
       background-color: var(--primary);
     }
 
-    .gof {
-      position: absolute;
-      inset: 0;
-      z-index: -1;
+
+    @-webkit-keyframes bg-scrolling-reverse {
+      100% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @-moz-keyframes bg-scrolling-reverse {
+      100% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @-o-keyframes bg-scrolling-reverse {
+      100% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @keyframes bg-scrolling-reverse {
+      100% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @-webkit-keyframes bg-scrolling {
+      0% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @-moz-keyframes bg-scrolling {
+      0% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @-o-keyframes bg-scrolling {
+      0% {
+        background-position: 120px 120px;
+      }
+    }
+
+    @keyframes bg-scrolling {
+      0% {
+        background-position: 120px 120px;
+      }
     }
   </style>
 </head>
@@ -100,7 +175,7 @@
 <body class="min-h-screen min-w-full bg-sky-50 dark:bg-stone-900/90 text-sky-950/95 dark:text-amber-400/90">
   <main class="flex flex-col justify-center items-center h-screen">
     <article
-      class="w-[35rem] h-[18rem] border-2 rounded-2xl overflow-hidden flex flex-row p-3 gap-4 glass bg-white/20 dark:bg-stone-950/70 border-sky-800/95 dark:border-stone-600/60">
+      class="w-[35rem] h-[18rem] border-2 rounded-2xl overflow-hidden flex flex-row p-3 gap-4 glass bg-white/20 dark:bg-stone-950/10 border-sky-800/95 dark:border-stone-600/60">
       <div class="w-[30rem] flex align-bottom">
         <img srcset="
               https://file.ptsgrn.dev/n-profile.jpg?resize=400,auto   400w,
@@ -180,105 +255,8 @@
         `${document.documentElement.classList.contains("dark")}`
       );
     });
-    let cgof = conveyGameOfLife();
-    window.addEventListener("resize", () => {
-      cgof.destroy();
-      // create a new instance
-      cgof = conveyGameOfLife();
-    });
   })();
 
-  function conveyGameOfLife() {
-    const $main = document.querySelector("main");
-    const $canvas = document.createElement("canvas");
-    $canvas.classList.add("gof");
-    $canvas.width = $main.clientWidth;
-    $canvas.height = $main.clientHeight;
-    $main.appendChild($canvas);
-    const ctx = $canvas.getContext("2d");
-    const size = 10;
-    let cols = Math.floor($canvas.width / size);
-    let rows = Math.floor($canvas.height / size);
-    let gridArray = new Array(cols)
-      .fill(null)
-      .map(() => new Array(rows).fill(null));
-    let next = new Array(cols)
-      .fill(null)
-      .map(() => new Array(rows).fill(null));
-    const init = () => {
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          gridArray[i][j] = Math.floor(Math.random() * 2);
-        }
-      }
-    };
-    const draw = () => {
-      ctx.clearRect(0, 0, $canvas.width, $canvas.height);
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          ctx.beginPath();
-          ctx.rect(i * size, j * size, size, size);
-          ctx.fillStyle = gridArray[i][j]
-            ? "rgba(255,255,255,0.1)"
-            : "rgba(0,0,0,0.2)";
-          ctx.fill();
-          ctx.closePath();
-        }
-      }
-    };
-    const update = () => {
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          let neighborsCount = 0;
-          for (let x = -1; x <= 1; x++) {
-            for (let y = -1; y <= 1; y++) {
-              if (x === 0 && y === 0) continue;
-              if (i + x < 0 || i + x >= cols || j + y < 0 || j + y >= rows)
-                continue;
-              neighborsCount += gridArray[i + x][j + y];
-            }
-          }
-          // Alive cell – Fewer than 2 alive neighbours – dies (underpopulation)
-          if (gridArray[i][j] === 1 && neighborsCount < 2) {
-            next[i][j] = 0; // die
-            // Alive cell – 2 or 3 neighbours – continues to live (perfect situation)
-          } else if (
-            gridArray[i][j] === 1 &&
-            [2, 3].includes(neighborsCount)
-          ) {
-            next[i][j] = 1;
-            // Alive cell – More than 3 alive neighbours – dies (overpopulation)
-          } else if (gridArray[i][j] === 1 && neighborsCount > 3) {
-            next[i][j] = 0;
-          } else if (gridArray[i][j] === 0 && neighborsCount === 3) {
-            next[i][j] = 1;
-          } else {
-            next[i][j] = gridArray[i][j];
-          }
-        }
-      }
-      const temp = gridArray;
-      gridArray = next;
-      next = temp;
-    };
-    let interruptLoop = false;
-    const loop = () => {
-      if (interruptLoop) return;
-      draw();
-      update();
-      setTimeout(() => {
-        requestAnimationFrame(loop);
-      }, 100);
-    };
-    init();
-    loop();
-    return {
-      destroy: () => {
-        interruptLoop = true;
-        $canvas.remove();
-      },
-    };
-  }
 </script>
 
 </html>
