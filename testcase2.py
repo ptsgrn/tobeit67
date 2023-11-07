@@ -6,8 +6,15 @@
 import sys
 import os
 import subprocess
+import requests
 # get problem id from argv
 problem_id = sys.argv[1]
+api_token = ""
+if os.path.exists("api_token.txt"):
+    with open("api_token.txt", "r") as f:
+        api_token = f.read().strip()
+if not api_token:
+    print("API Token not found. Please put your API Token in api_token.txt")
 
 # check if problem and testcase exists
 if not os.path.exists("problems/" + problem_id + ".py"):
@@ -19,31 +26,76 @@ if not os.path.exists("problems/" + problem_id + ".py"):
             f.write("# Path: problems/" + problem_id + ".py\n")
             f.write("# Your code here")
             print("Problem file created")
-        # check if user is in vscode terminal and --open is in argv
-        if os.environ.get('TERM_PROGRAM') == 'vscode' and "--open" in sys.argv:
-            print("Opening problem file...")
-            os.system("code problems/" + problem_id + ".py")
     else:
         print("Aborted")
         exit(0)
 if not os.path.exists("problems/" + problem_id + ".tc.md"):
+    print("Testcases file not found")
     if not "--create" in sys.argv:
         # prompt to create testcase file
         print("Problem and testcases file not found. Create one? [Y/n]")
     if ("--create" in sys.argv) or input().lower() == 'y':
+        print("Fetching problem data...")
+        testcase_file_content = ""
+        testcase_file_content = "# Path: problems/" + problem_id + ".tc.md\n"
+        problem_data = requests.get(
+            "https://api-d3cwvqj26q-as.a.run.app/api/course/problem/" + problem_id, headers={"Authorization": "Bearer " + api_token})
+        print("Fetching problem data...")
+        if problem_data.status_code != 200:
+            print("Problem not found")
+        else:
+            problem_data = problem_data.json()["data"][0]
+            # write problem title
+            testcase_file_content += "# " + \
+                problem_data["problem_title"] + "\n"
+            # write problem description
+            testcase_file_content += problem_data["problem_description"] + "\n"
+            # write problem input specification
+            testcase_file_content += "## Input\n"
+            testcase_file_content += problem_data["problem_input_specification"] + "\n"
+            # write problem output specification
+            testcase_file_content += "## Output\n"
+            testcase_file_content += problem_data["problem_output_specification"] + "\n"
+            # write problem sample input
+            testcase_file_content += "## Testcases\n"
+            testcase_data = requests.get(
+                "https://api-d3cwvqj26q-as.a.run.app/api/course/problem/testcase/" + problem_id, headers={"Authorization": "Bearer " + api_token})
+            if testcase_data.status_code != 200:
+                print("Testcases from api not work")
+                testcase_file_content += "##### 1\n"
+                testcase_file_content += "```\n"
+                testcase_file_content += "```\n"
+                testcase_file_content += "----\n"
+                testcase_file_content += "```\n"
+                testcase_file_content += "```\n"
+                print("Testcases file created")
+            else:
+                testcase_data = testcase_data.json()["data"]
+                for i, tcd in enumerate(testcase_data):
+                    testcase_file_content += "##### " + str(i+1) + "\n"
+                    testcase_file_content += "```\n"
+                    testcase_file_content += tcd["testcase_input"] + "\n"
+                    testcase_file_content += "```\n"
+                    testcase_file_content += "----\n"
+                    testcase_file_content += "```\n"
+                    testcase_file_content += tcd["testcase_output"] + "\n"
+                    testcase_file_content += "```\n"
+            if testcase_file_content == "":
+                testcase_file_content = """# Path: problems/""" + problem_id + """.tc.md
+# Your testcases here
+##### 1
+```
+Input here
+```
+----
+```
+Output here
+```
+"""
+
         with open("problems/" + problem_id + ".tc.md", "w") as f:
-            f.write("# Path: problems/" + problem_id + ".tc.md\n")
-            f.write("```markdown\n")
-            f.write("##### 1\n")
-            f.write("Input here\n")
-            f.write("----\n")
-            f.write("Expected output here\n")
-            f.write("```\n")
+            f.write(testcase_file_content)
             print("Testcases file created")
-        # check if user is in vscode terminal and --open is in argv
-        if os.environ.get('TERM_PROGRAM') == 'vscode' and "--open" in sys.argv:
-            print("Opening testcases file...")
-            os.system("code problems/" + problem_id + ".tc.md")
 
 
 class c:
@@ -57,7 +109,7 @@ print("Problem ID:", problem_id)
 # get testcase from .tc2 file
 testcase = ""
 with open("problems/" + problem_id + ".tc.md", "r") as f:
-    testcase = f.read().replace("```", "").split("##### ")
+    testcase = f.read().replace("```", "").replace('\n\n', '\n').split("##### ")
 testcase = testcase[1:]
 
 testcase = [[item2.strip() for item2 in item.strip().split('----')]

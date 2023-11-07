@@ -1,4 +1,4 @@
 {
   "watch": ["problems/", "."],
-  "ext": "py,tc,md"
+  "ext": "py,tc.md"
 }

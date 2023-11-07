@@ -1,5 +1,5 @@
-#debug: no_box
-spells = {
+# debug: no_box
+skills = {
     ('Q', 'Q', 'Q'): 'COLD SNAP',
     ('Q', 'Q', 'W'): 'GHOST WALK',
     ('Q', 'Q', 'E'): 'ICE WALL',
@@ -12,23 +12,54 @@ spells = {
     ('Q', 'W', 'E'): 'DEFEANING BLAST'
 }
 
+
+slot_s = ''
+slot_d = ''
+
+
+def add_to_slot(skills):
+    global slot_s, slot_d
+    if skills in (slot_d, slot_s):
+        return
+    if slot_d != '' and slot_s != '':
+        return
+    if slot_s == '':
+        slot_s = skills
+    else:
+        slot_d = slot_s
+        slot_s = skills
+
+
+def get_skills(surround):
+    for key in skills.keys():
+        if set(key) == set(surround):
+            return skills[key]
+    return None
+
+
 cin = input().upper()
-slots = []
-av = {'S': '', 'D': ''}
-called = []
-for c in cin:
-    if c in ('Q', 'W', 'E'):
-        slots.append(c)
-        slots = slots[-3:]
-    if c == 'R':
-        if len(slots) != 3:
-            print('EZ MID')
-            break
-        for s in spells:
-            if set(s) ^ set(slots) == set():
-                av['D'] = av['S']
-                av['S'] = spells.get(s, '')
-                break
-    if c in ('S', 'D'):
-        called.append(c)
-print(*[av[ca] for ca in called], sep=', ')
+surrounding = []
+used_skills = []
+for command in cin:
+    if command in ('Q', 'W', 'E'):
+        surrounding.append(command)
+        surrounding = surrounding[-3:]
+    if command == 'R':
+        if len(surrounding) != 3:
+            continue
+        cast_skill = get_skills(surrounding)
+        if cast_skill is None:
+            continue
+        add_to_slot(cast_skill)
+        surrounding = []
+    if command == 'S':
+        if slot_s == '':
+            continue
+        used_skills.append(slot_s)
+        slot_s = ''
+    if command == 'D':
+        if slot_d == '':
+            continue
+        used_skills.append(slot_d)
+        slot_d = ''
+print(', '.join(used_skills)) if len(used_skills) > 0 else print('EZ MID')

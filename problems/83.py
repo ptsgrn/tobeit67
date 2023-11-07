@@ -1,14 +1,13 @@
-#debug: no_box
-data_dict = {}
+#debug: show_input_output
+d = {}
 count = 0
 while True:
     line = input()
     if line.lower() == "end":
         break
-    if line in data_dict:
-        data_dict[line] = [data_dict[line][0], data_dict[line][1] + 1]
-    else:
-        count += 1
-        data_dict[line] = [count, 1]
-for key in sorted(data_dict.keys()):
-    print(key, data_dict[key][0], data_dict[key][1])
+    count += 1 if line not in d else 0
+    d[line] = (d[line][0], d[line][1] + 1) if line in d else (count, 1)
+
+# print(sorted(d.keys()))
+for key in sorted(d.keys()):
+    print(key, d[key][0], d[key][1])
